@@ -58,7 +58,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 TEST_SHA=$$(git log -1 --pretty=format:"%h" -- ${ROOT_DIR}/test/)${CACHE_BUSTER}
 
 REQUIREMENTS_SHA=$$(md5sum $(KONG_SOURCE_LOCATION)/.requirements | cut -d' ' -f 1)
-BUILD_TOOLS_SHA=$$(git rev-parse --short HEAD)
+BUILD_TOOLS_SHA=balenalib
 KONG_SHA=$$(git --git-dir=$(KONG_SOURCE_LOCATION)/.git rev-parse --short HEAD)
 
 DOCKER_BASE_SUFFIX=${BUILD_TOOLS_SHA}${CACHE_BUSTER}
@@ -108,6 +108,7 @@ endif
 	--build-arg RESTY_IMAGE_TAG="$(RESTY_IMAGE_TAG)" \
 	--build-arg RESTY_IMAGE_BASE=$(RESTY_IMAGE_BASE) \
 	-t $(DOCKER_REPOSITORY):$(ARCHITECTURE)-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_BASE_SUFFIX) . )
+	docker push $(DOCKER_REPOSITORY):$(ARCHITECTURE)-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_BASE_SUFFIX)
 
 build-openresty:
 ifeq ($(RESTY_IMAGE_BASE),src)
@@ -135,6 +136,7 @@ else
 	--build-arg OPENRESTY_PATCHES=$(OPENRESTY_PATCHES) \
 	--build-arg DEBUG=$(DEBUG) \
 	-t $(DOCKER_REPOSITORY):openresty-$(ARCHITECTURE)-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_OPENRESTY_SUFFIX) . )
+	docker push $(DOCKER_REPOSITORY):openresty-$(ARCHITECTURE)-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_OPENRESTY_SUFFIX)
 endif
 
 ifeq ($(RESTY_IMAGE_BASE),src)
