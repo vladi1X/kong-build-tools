@@ -5,10 +5,7 @@ ARG RESTY_IMAGE_TAG="3"
 
 FROM ${DOCKER_NAMESPACE}/${ARCHITECTURE}-${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 
-RUN ["cross-build-start"]
-
-RUN install_packages \ 
-        make \
+RUN install_packages make \
         gcc \
         make \
         g++ \
@@ -36,5 +33,3 @@ RUN install_packages \
         bash \
         go \
         patch
-
-RUN ["cross-build-end"]

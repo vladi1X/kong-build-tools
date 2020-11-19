@@ -33,7 +33,14 @@ pushd /kong
 
   mkdir -p /tmp/plugin
   
-  /usr/local/bin/luarocks make kong-${ROCKSPEC_VERSION}.rockspec \
+  /usr/local/bin/luarocks --verbose make kong-${ROCKSPEC_VERSION}.rockspec \
+    CRYPTO_DIR=/usr/local/kong \
+    OPENSSL_DIR=/usr/local/kong \
+    YAML_LIBDIR=/tmp/build/usr/local/kong/lib \
+    YAML_INCDIR=/tmp/yaml \
+    CFLAGS="-L/tmp/build/usr/local/kong/lib -Wl,-rpath,/usr/local/kong/lib -O2 -fPIC" || true
+  
+  /usr/local/bin/luarocks --verbose make kong-${ROCKSPEC_VERSION}.rockspec \
     CRYPTO_DIR=/usr/local/kong \
     OPENSSL_DIR=/usr/local/kong \
     YAML_LIBDIR=/tmp/build/usr/local/kong/lib \

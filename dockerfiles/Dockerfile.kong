@@ -6,13 +6,15 @@ ARG DOCKER_REPOSITORY
 
 FROM ${DOCKER_REPOSITORY}:openresty-${ARCHITECTURE}-${RESTY_IMAGE_BASE}-${RESTY_IMAGE_TAG}-${DOCKER_OPENRESTY_SUFFIX}
 
-RUN ["cross-build-start"]
-
 WORKDIR /kong
 COPY kong /kong
 COPY id_rsa /root/id_rsa
 COPY build-kong.sh /build-kong.sh
 
-RUN /build-kong.sh
+RUN /build-kong.sh || /build-kong.sh
 
-RUN ["cross-build-end"]
+RUN cp -R /tmp/build/* / && \
+    /usr/local/bin/luarocks --version && \
+    /usr/local/kong/bin/openssl version && \
+    /usr/local/openresty/bin/openresty -v && \
+    /usr/local/openresty/nginx/sbin/nginx -v

@@ -31,6 +31,7 @@ else
 fi
 
 pushd docker-kong/${BUILD_DIR}
+    chmod 775 *.sh
     docker build -t $KONG_TEST_IMAGE_NAME \
     --no-cache \
     --build-arg ASSET=local .

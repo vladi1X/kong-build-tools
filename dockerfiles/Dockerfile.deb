@@ -8,8 +8,6 @@ ARG RESTY_IMAGE_TAG="bionic"
 
 FROM ${DOCKER_NAMESPACE}/${ARCHITECTURE}-${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 
-RUN ["cross-build-start"]
-
 RUN install_packages \
         build-essential \
         ca-certificates \
@@ -31,5 +29,3 @@ RUN install_packages \
         file \
         ssh \
         valgrind
-
-RUN ["cross-build-end"]
