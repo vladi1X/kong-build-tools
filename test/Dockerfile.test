@@ -16,7 +16,8 @@ ENV KONG_GO_PLUGINSERVER_VERSION $KONG_GO_PLUGINSERVER_VERSION
 
 RUN cp -R /tmp/build/* / || true
 RUN rm -rf /usr/local/bin/kong
-RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
+RUN --mount=type=cache,target=/var/cache/test \
+    ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
     apt-get update && apt-get install -y \
     tzdata \
     vim \
@@ -29,7 +30,8 @@ RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get install -y postgresql
 
-RUN curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
+RUN RUN --mount=type=cache,target=/var/cache/go \
+    curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
 	-o /tmp/go.tar.gz && \
 	cd /tmp && tar -xf go.tar.gz
 

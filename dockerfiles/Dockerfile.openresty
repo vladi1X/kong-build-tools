@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1.2
+
 ARG RESTY_IMAGE_BASE="ubuntu"
 ARG RESTY_IMAGE_TAG="bionic"
 ARG DOCKER_BASE_SUFFIX
@@ -10,7 +12,8 @@ ENV EDITION $EDITION
 
 ARG LIBYAML_VERSION=0.2.5
 ENV LIBYAML_VERSION $LIBYAML_VERSION
-RUN curl -fsSLo /tmp/yaml-${LIBYAML_VERSION}.tar.gz https://pyyaml.org/download/libyaml/yaml-${LIBYAML_VERSION}.tar.gz \
+RUN --mount=type=cache,target=/var/cache/yaml \
+    curl -fsSLo /tmp/yaml-${LIBYAML_VERSION}.tar.gz https://pyyaml.org/download/libyaml/yaml-${LIBYAML_VERSION}.tar.gz \
     && cd /tmp \
     && tar xzf yaml-${LIBYAML_VERSION}.tar.gz \
     && ln -s /tmp/yaml-${LIBYAML_VERSION} /tmp/yaml \
@@ -97,6 +100,6 @@ WORKDIR /kong
 COPY kong /kong
 COPY build-kong.sh /build-kong.sh
 
-RUN /build-kong.sh && rm -rf /kong
+RUN --mount=type=cache,target=/var/cache/build-kong /build-kong.sh && rm -rf /kong
 
 RUN sed -i 's/\/tmp\/build//' `grep -l -I -r '\/tmp\/build' /tmp/build/` || true

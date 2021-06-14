@@ -57,7 +57,7 @@ endif
 BUILDX_INFO ?= $(shell docker buildx 2>&1 >/dev/null; echo $?)
 
 ifeq ($(BUILDX),false)
-	DOCKER_COMMAND?=docker build --build-arg BUILDPLATFORM=x/amd64
+	DOCKER_COMMAND?=docker buildx build --push --platform="linux/amd64" --build-arg BUILDPLATFORM=x/amd64
 else
 	DOCKER_COMMAND?=docker buildx build --push --platform="linux/amd64,linux/arm64"
 endif
@@ -92,7 +92,7 @@ else
 	UPDATE_CACHE_COMMAND?=false
 endif
 
-DOCKER_REPOSITORY?=mashape/kong-build-tools
+DOCKER_REPOSITORY?=ghcr.io/hutchic-org/kong
 
 debug:
 	@echo ${CACHE}
@@ -152,6 +152,8 @@ endif
 	( $(DOCKER_COMMAND) -f dockerfiles/Dockerfile.$(PACKAGE_TYPE) \
 	--build-arg RESTY_IMAGE_TAG="$(RESTY_IMAGE_TAG)" \
 	--build-arg RESTY_IMAGE_BASE=$(RESTY_IMAGE_BASE) \
+	--cache-from=type=registry,ref=$(DOCKER_REPOSITORY):cache-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
+	--cache-to=type=registry,ref=$(DOCKER_REPOSITORY):cache-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
 	-t $(DOCKER_REPOSITORY):$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_BASE_SUFFIX) . )
 
 build-openresty:
@@ -178,6 +180,8 @@ else
 	--build-arg KONG_NGINX_MODULE=$(KONG_NGINX_MODULE) \
 	--build-arg OPENRESTY_PATCHES=$(OPENRESTY_PATCHES) \
 	--build-arg DEBUG=$(DEBUG) \
+	--cache-from=type=registry,ref=$(DOCKER_REPOSITORY):cache-openresty-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
+	--cache-to=type=registry,ref=$(DOCKER_REPOSITORY):cache-openresty-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
 	-t $(DOCKER_REPOSITORY):openresty-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_OPENRESTY_SUFFIX) . )
 endif
 
@@ -205,6 +209,8 @@ endif
 	--build-arg KONG_CONFLICTS=$(KONG_CONFLICTS) \
 	--build-arg PRIVATE_KEY_FILE=kong.private.gpg-key.asc \
 	--build-arg PRIVATE_KEY_PASSPHRASE="$(PRIVATE_KEY_PASSPHRASE)" \
+	--cache-from=type=registry,ref=$(DOCKER_REPOSITORY):cache-kong-packaged-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)
+	--cache-to=type=registry,ref=$(DOCKER_REPOSITORY):cache-kong-packaged-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)
 	-t $(DOCKER_REPOSITORY):kong-packaged-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_KONG_SUFFIX) .
 ifeq ($(BUILDX),false)
 	docker run -d --rm --name output $(DOCKER_REPOSITORY):kong-packaged-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_KONG_SUFFIX) tail -f /dev/null
@@ -241,6 +247,8 @@ actual-build-kong:
 	--build-arg RESTY_IMAGE_BASE=$(RESTY_IMAGE_BASE) \
 	--build-arg DOCKER_REPOSITORY=$(DOCKER_REPOSITORY) \
 	--build-arg DOCKER_OPENRESTY_SUFFIX=$(DOCKER_OPENRESTY_SUFFIX) \
+	--cache-from=type=registry,ref=$(DOCKER_REPOSITORY):cache-kong-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
+	--cache-to=type=registry,ref=$(DOCKER_REPOSITORY):cache-kong-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG) \
 	-t $(DOCKER_REPOSITORY):kong-$(RESTY_IMAGE_BASE)-$(RESTY_IMAGE_TAG)-$(DOCKER_KONG_SUFFIX) . )
 
 kong-test-container:
@@ -255,6 +263,8 @@ ifneq ($(RESTY_IMAGE_BASE),src)
 	--build-arg KONG_GO_PLUGINSERVER_VERSION=$(KONG_GO_PLUGINSERVER_VERSION) \
 	--build-arg DOCKER_REPOSITORY=$(DOCKER_REPOSITORY) \
 	--build-arg DOCKER_OPENRESTY_SUFFIX=$(DOCKER_OPENRESTY_SUFFIX) \
+	--cache-from=type=registry,ref=$(DOCKER_REPOSITORY):cache-test-$(DOCKER_TEST_SUFFIX) \
+	--cache-to=type=registry,ref=$(DOCKER_REPOSITORY):cache-test-$(DOCKER_TEST_SUFFIX) \
 	-t $(DOCKER_REPOSITORY):test-$(DOCKER_TEST_SUFFIX) . )
 	
 	docker tag $(DOCKER_REPOSITORY):test-$(DOCKER_TEST_SUFFIX) $(DOCKER_REPOSITORY):test

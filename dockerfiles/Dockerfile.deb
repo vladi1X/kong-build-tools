@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1.2
+
 # Dockerfile - Ubuntu
 # Ubuntu base image with all prerequisites to compile / install openresty and Kong
 
@@ -6,7 +8,8 @@ ARG RESTY_IMAGE_TAG="bionic"
 
 FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+RUN --mount=type=cache,target=/var/cache/apt \
+    DEBIAN_FRONTEND=noninteractive apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
