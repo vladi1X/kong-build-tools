@@ -43,17 +43,13 @@ pushd /kong
     YAML_INCDIR=/tmp/yaml \
     CFLAGS="-L/tmp/build/usr/local/kong/lib -Wl,-rpath,/usr/local/kong/lib -O2 -fPIC"
   
-  grep git@github.com .requirements | while read -r line ; do
-    rm -rf /tmp/plugin || true
-    echo "Processing $line"
-    repo_url=$(echo $line | cut -d " " -f1)
-    echo $repo_url
-    version=$(echo $line | cut -d " " -f2)
-    git clone --branch $version --recursive $repo_url /tmp/plugin/
-    cd /tmp/plugin/
-    /tmp/build/usr/local/bin/luarocks make *.rockspec CRYPTO_DIR=/usr/local/kong OPENSSL_DIR=/usr/local/kong
-    cd /kong
-  done
+  if test -f private_luarocks; then
+    for dir in private_luarocks/*/; do \
+      pushd $dir; \
+      /tmp/build/usr/local/bin/luarocks make *.rockspec CRYPTO_DIR=/usr/local/kong OPENSSL_DIR=/usr/local/kong; \
+      popd;
+    done
+  fi
   
   grep https://api.github.com .requirements | while read -r line ; do
     rm -rf /tmp/plugin || true

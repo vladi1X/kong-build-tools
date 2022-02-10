@@ -32,7 +32,7 @@ RUN if [ "$EDITION" = "enterprise" ] ; then curl -fsSLo /tmp/gmp-${KONG_GMP_VERS
     && ./configure --build=x86_64-linux-gnu --enable-static=no --libdir=/tmp/build/usr/local/kong/lib \
     && make -j${RESTY_J}; fi
 
-ARG KONG_NETTLE_VERSION="3.7.3"
+ARG KONG_NETTLE_VERSION=3.7.3
 ENV KONG_NETTLE_VERSION $KONG_NETTLE_VERSION
 RUN if [ "$EDITION" = "enterprise" ] ; then curl -fsSLo /tmp/nettle-${KONG_NETTLE_VERSION}.tar.gz https://ftp.gnu.org/gnu/nettle/nettle-${KONG_NETTLE_VERSION}.tar.gz \
     && cd /tmp \
@@ -40,11 +40,11 @@ RUN if [ "$EDITION" = "enterprise" ] ; then curl -fsSLo /tmp/nettle-${KONG_NETTL
     && ln -s /tmp/nettle-${KONG_NETTLE_VERSION} /tmp/nettle \
     && cd /tmp/nettle \
     && LDFLAGS="-Wl,-rpath,/usr/local/kong/lib" \
-    ./configure --disable-static \
-    --libdir=/tmp/build/usr/local/kong/lib \
-    --with-include-path="/tmp/gmp-${KONG_GMP_VERSION}/" \
-    --with-lib-path="/tmp/gmp-${KONG_GMP_VERSION}/.libs/" \
-    && make -j${RESTY_J}; fi
+           ./configure --disable-static \
+           --libdir=/tmp/build/usr/local/kong/lib \
+           --with-include-path="/tmp/gmp-${KONG_GMP_VERSION}/" \
+           --with-lib-path="/tmp/gmp-${KONG_GMP_VERSION}/.libs/" \
+    && make install -j${RESTY_J}; fi
 
 ARG KONG_DEP_PASSWDQC_VERSION="1.3.1"
 ENV KONG_DEP_PASSWDQC_VERSION $KONG_DEP_PASSWDQC_VERSION
@@ -88,16 +88,14 @@ COPY build-openresty.sh /tmp/build-openresty.sh
 ARG OPENRESTY_PATCHES=1
 ENV OPENRESTY_PATCHES="${OPENRESTY_PATCHES}"
 
-COPY kong-licensing /enterprise/kong-licensing
-COPY lua-kong-nginx-module /enterprise/lua-kong-nginx-module
 COPY lua-resty-lmdb /enterprise/lua-resty-lmdb
+COPY kong /kong
 
 ARG DEBUG=1
 RUN DEBUG="${DEBUG}" /tmp/build-openresty.sh \
     && rm -rf /work
 
 WORKDIR /kong
-COPY kong /kong
 COPY build-kong.sh /build-kong.sh
 
 RUN /build-kong.sh && rm -rf /kong

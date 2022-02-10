@@ -4,7 +4,7 @@ export PING_SLEEP=50s
 export WORKDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export BUILD_OUTPUT=$WORKDIR/build.out
 
-touch $BUILD_OUTPUT
+[ -d "/kong/enterprise" ] && cp -r /kong/enterprise/* /enterprise/
 
 dump_output() {
    echo Tailing the last 500 lines of output:
