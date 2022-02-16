@@ -81,6 +81,9 @@ LABEL resty_luarocks_version="${RESTY_LUAROCKS_VERSION}"
 ARG RESTY_LMDB=0
 LABEL resty_lmdb="${RESTY_LMDB}"
 
+ARG NGX_BROTLI_VERSION=master
+LABEL ngx_brotli_version="${NGX_BROTLI_VERSION}"
+
 COPY openresty-build-tools /tmp/openresty-build-tools
 COPY openresty-patches /tmp/openresty-patches
 COPY build-openresty.sh /tmp/build-openresty.sh
