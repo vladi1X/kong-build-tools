@@ -15,6 +15,7 @@ FORCE=0
 OPENRESTY_PATCHES=$OPENRESTY_PATCHES
 KONG_NGINX_MODULE=master
 RESTY_LMDB=0 # disable by default for now
+NGX_BROTLI_VERSION=master
 DEBUG=0
 NPROC=
 OS=
@@ -80,6 +81,14 @@ main() {
         OPENRESTY_PATCHES=0
         shift 1
         ;;
+      --brotli)
+        NGX_BROTLI_VERSION=$2
+	shift 2
+	;;
+      --no-brotli)
+	NGX_BROTLI_VERSION=0
+	shift 1
+	;;
       --kong-nginx-module)
         KONG_NGINX_MODULE=$2
         shift 2
@@ -282,6 +291,21 @@ main() {
         fi
       fi
     fi
+
+    # BROTLI
+    if [ $NGX_BROTLI_VERSION != 0 ]; then
+      pushd $DOWNLOAD_CACHE
+        if [ ! -d ngx_brotli ]; then
+          warn "ngx_brotli source not found, cloning ..."
+          git clone --recursive https://github.com/google/ngx_brotli.git
+        fi
+        pushd ngx_brotli
+          git fetch
+          git reset --hard $NGX_BROTLI_VERSION || git reset --hard origin/$NGX_BROTLI_VERSION
+        popd
+      popd
+    fi
+	    
 
     # PCRE
 
@@ -582,6 +606,10 @@ main() {
           OPENRESTY_OPTS+=('--with-stream_ssl_preread_module')
         fi
 
+	if [ $NGX_BROTLI_VERSION != 0 ]; then
+	  OPENRESTY_OPTS+=("--add-module=$DOWNLOAD_CACHE/ngx_brotli")
+	fi
+
         if [ ! -z "$PCRE_VER" ]; then
           OPENRESTY_OPTS+=("--with-pcre=$PCRE_DOWNLOAD")
 
@@ -817,6 +845,9 @@ show_usage() {
   echo ""
   echo "      --pcre <pcre_ver>              Version of PCRE to build, such as 8.43. If absent, PCRE will"
   echo "                                     not be build."
+  echo "      --brotli <branch>              Version of ngx_brotli module to build"
+  echo ""
+  echo "      --no-brotli                    Do not include ngx_brotli module while compiling OpenResty."
   echo ""
   echo "      --add-module <module_path>     Path to additional NGINX module to be built. This option can be"
   echo "                                     repeated and will be passed to NGINX's configure in the order"
