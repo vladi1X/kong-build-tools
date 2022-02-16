@@ -44,6 +44,11 @@ then
   RESTY_LMDB=0
 fi
 
+if [ -z "$NGX_BROTLI_VERSION" ]
+then
+  NGX_BROTLI_VERSION=0
+fi
+
 LUAROCKS_PREFIX=/usr/local \
 LUAROCKS_DESTDIR=/tmp/build \
 OPENRESTY_PREFIX=/usr/local/openresty \
@@ -60,6 +65,7 @@ EDITION=$EDITION \
 --luarocks $RESTY_LUAROCKS_VERSION \
 --kong-nginx-module $KONG_NGINX_MODULE \
 --pcre $RESTY_PCRE_VERSION \
+--brotli $NGX_BROTLI_VERSION \
 --work /work $KONG_NGX_BUILD_ARGS >> $BUILD_OUTPUT 2>&1
 
 # The build finished without returning an error so dump a tail of the output
